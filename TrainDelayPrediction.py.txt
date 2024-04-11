@@ -1,0 +1,108 @@
+import pandas
+import numpy as np
+from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.naive_bayes import GaussianNB
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn import svm
+import xgboost as xgb
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import r2_score
+import matplotlib.pyplot as plt
+import streamlit as st
+
+data = pandas.read_csv("traindelay112.csv")
+#print(data.head())
+#print(data.sample(5))
+''''
+train_no = input('Enter Train No: ')
+df = data.dropna()
+X = df.drop('Delay', axis=1)
+y = df['Delay']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=2022)
+model = RandomForestRegressor(n_estimators=50, random_state=2022)
+model.fit(X_train, y_train)
+print(y_test)
+y = model.predict(X_test)
+print('Predicted Delay:', y)
+score_rfr = round(r2_score(y_test, y)*100, 2)
+print("Accuracy is: "+str(score_rfr)+"%")
+lr = LinearRegression()
+lr.fit(X_train, y_train)
+#print(y_test)
+y = lr.predict(X_test)
+print('Predicted Delay:', y)
+score_lr = round(r2_score(y_test, y)*100, 2)
+print("Accuracy is: "+str(score_lr)+"%")
+#print(y_test)
+#svm
+sv = svm.SVC(kernel='linear')
+sv.fit(X_train, y_train)
+y = sv.predict(X_test)
+print('Predicted Delay:', y)
+score_svm = round(r2_score(y_test, y)*100, 2)
+print("Accuracy is: "+str(score_svm)+"%")
+
+#KNN
+knn = KNeighborsClassifier(n_neighbors=10)
+knn.fit(X_train, y_train)
+y = knn.predict(X_test)
+print('Predicted Delay:', y)
+score_knn = round(r2_score(y_test, y)*100, 2)
+print("Accuracy is: "+str(score_knn)+"%")
+#XGBoost
+dtrain = xgb.DMatrix(X_train, label=y_train)
+dtest = xgb.DMatrix(X_test, label=y_test)
+params = {
+    'objective': 'reg:squarederror',
+    'max_depth': 5,
+    'learning_rate': 0.2,
+    'n_estimators': 50,
+    'eval_metric': 'rmse'
+}
+boost = xgb.train(params, dtrain, num_boost_round=100)
+y = boost.predict(dtest)
+print('Predicted Delay:', y)
+score_xb = round(r2_score(y_test, y)*100, 2)
+print("Accuracy is: "+str(score_xb)+"%")
+#DT
+dt = DecisionTreeClassifier()
+dt.fit(X_train, y_train)
+y = dt.predict(X_test)
+print('Predicted Delay:', y)
+score_dt = round(r2_score(y, y_test)*100, 2)
+print("Accuracy is: "+str(score_dt)+"%")
+
+score = np.array([score_lr, score_svm, score_knn, score_xb, score_rfr, score_dt])
+algorithms = np.array(["Linear Regression", "SVM", "KNN", "XGBoost", "RandomForest", "Decision Tree"])
+for i in range(len(algorithms)):
+    print("The accuracy score achieved using " + algorithms[i] + " is: " + str(score[i]) + " %")
+
+rfr = RandomForestRegressor()
+rfr.fit(data[['Train No']], data[['Delay']])
+yy = rfr.predict([[train_no]])
+print('Predicted Delay of Train No', train_no, 'is: ', yy)
+
+plt.bar(algorithms, score)
+plt.xlabel("Algorithms")
+plt.ylabel("Accuracy score")
+plt.show()
+'''
+
+st.image('train.png')
+st.title("Train Delay Prediction")
+col1, col2, col3 = st.columns(3)
+form = st.form("Form 1")
+trainno = col1.text_input("Train No")
+station = col2.text_input("Station")
+arrival = col3.text_input("Arrival Time")
+k = form.form_submit_button("Submit")
+if k:
+    X = np.array([[trainno]])
+    X = X.astype(float)
+    m = RandomForestRegressor()
+    m.fit(data[['Train No']], data[['Delay']])
+    time = m.predict(X)
+    st.subheader(f"Predicted delay time of Train No {trainno} is {time[0]:.0f}"+" Minutes")
